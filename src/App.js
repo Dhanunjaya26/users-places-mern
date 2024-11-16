@@ -2,7 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { Layout } from "./shared/pages";
-import { Users } from "./user/pages";
+import { Auth, Users } from "./user/pages";
 import { NewPlace, UpdatePlace, UserPlaces } from "./places/pages";
 
 const childrenMainWrapper = (element) => {
@@ -47,6 +47,14 @@ const router = createBrowserRouter([
         element: (
           <main>
             <UserPlaces />
+          </main>
+        ),
+      },
+      {
+        path: "auth",
+        element: (
+          <main>
+            <Auth />
           </main>
         ),
       },
