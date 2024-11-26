@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Card } from "../../shared/components/UIElements";
 
 import { Button, Input } from "../../shared/components/FormElements";
@@ -8,10 +8,13 @@ import {
   VALIDATOR_REQUIRE,
 } from "../../shared/utils/validators";
 import { useForm } from "../../shared/hooks/form-hook";
+import { AuthContext } from "../../shared/context/auth-context";
 
 import "./Auth.css";
 
 const Auth = () => {
+  const { isLoggedIn, login } = useContext(AuthContext);
+
   const [formData, inputHandler, setFormData] = useForm(
     {
       email: {
@@ -31,6 +34,7 @@ const Auth = () => {
   const authHandler = (event) => {
     event.preventDefault();
     console.log(formData.inputs);
+    login();
   };
 
   const switchModeHandler = () => {
