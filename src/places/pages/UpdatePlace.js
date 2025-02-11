@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./PlaceForm.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button, Input } from "../../shared/components/FormElements";
 import {
   VALIDATOR_MINLENGTH,
@@ -9,38 +9,14 @@ import {
 } from "../../shared/utils/validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { Card } from "../../shared/components/UIElements";
-
-const DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous skyscrapers in the world",
-    imageUrl:
-      "https://th.bing.com/th?id=OLC.lp5u7VeEyp0Iew480x360&w=210&h=140&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2",
-    address: "20 W 34th St, New York, NY 10001",
-    Location: {
-      lat: 40.7484,
-      lng: -73.9857,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Dhanu State Building",
-    description: "One of the most famous skyscrapers in the world",
-    imageUrl:
-      "https://th.bing.com/th?id=OLC.lp5u7VeEyp0Iew480x360&w=210&h=140&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2",
-    address: "20 W 34th St, New York, NY 10001",
-    Location: {
-      lat: 40.7484,
-      lng: -73.9857,
-    },
-    creator: "u2",
-  },
-];
+import { useHttpClient } from "../../shared/hooks/http-hook";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
 const UpdatePlace = () => {
   const { placeId } = useParams();
+  const [placeDetails, setPlaceDetails] = useState();
+  const navigate = useNavigate();
 
   const [formData, inputHandler, setFormData] = useForm(
     {
@@ -55,33 +31,59 @@ const UpdatePlace = () => {
     },
     false
   );
-
-  const identifiedPlace = DUMMY_PLACES.find((place) => place.id === placeId);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   useEffect(() => {
-    if (identifiedPlace) {
-      setFormData(
-        {
-          title: {
-            value: identifiedPlace.title,
-            isValid: true,
+    const fetchData = async () => {
+      try {
+        const responseData = await sendRequest(
+          `http://localhost:5000/api/places/${placeId}`
+        );
+        setPlaceDetails(responseData.place);
+        setFormData(
+          {
+            title: {
+              value: responseData.place.title,
+              isValid: true,
+            },
+            description: {
+              value: responseData.place.description,
+              isValid: true,
+            },
           },
-          description: {
-            value: identifiedPlace.description,
-            isValid: true,
-          },
-        },
-        true
-      );
-    }
-  }, [setFormData, identifiedPlace]);
+          true
+        );
+      } catch (err) {}
+    };
+    fetchData();
+  }, [sendRequest, setFormData]);
 
-  const updateSubmitHandler = (event) => {
+  const updateSubmitHandler = async (event) => {
     event.preventDefault();
     console.log(formData.inputs);
+    try {
+      await sendRequest(
+        `http://localhost:5000/api/places/${placeId}`,
+        "PATCH",
+        { "Content-Type": "application/json" },
+        JSON.stringify({
+          title: formData.inputs.title.value,
+          description: formData.inputs.description.value,
+        })
+      );
+      navigate(`/${placeDetails.creator}/places`);
+    } catch (err) {}
   };
 
-  if (!identifiedPlace) {
+  if (isLoading) {
+    return (
+      <div className="center">
+        <LoadingSpinner asOverlay />
+      </div>
+    );
+  }
+
+  if (!placeDetails && !error) {
     return (
       <div className="center">
         <Card>
@@ -91,42 +93,37 @@ const UpdatePlace = () => {
     );
   }
 
-  if (!formData.inputs.title.value) {
-    return (
-      <div className="center">
-        <h2>Loading</h2>
-      </div>
-    );
-  }
-
   return (
-    formData.inputs.title.value && (
-      <form className="place-form" onSubmit={updateSubmitHandler}>
-        <Input
-          type="text"
-          label="Title"
-          id="title"
-          element="input"
-          errorMessage="Please enter a valid title"
-          validators={[VALIDATOR_REQUIRE()]}
-          onInput={inputHandler}
-          initialValue={formData.inputs.title.value}
-          initialIsValid={formData.inputs.title.isValid}
-        />
-        <Input
-          type="text"
-          label="Description"
-          id="description"
-          element="textarea"
-          errorMessage="Please enter a valid description (min 5 characters)"
-          validators={[VALIDATOR_MINLENGTH(5)]}
-          onInput={inputHandler}
-          initialValue={formData.inputs.description.value}
-          initialIsValid={formData.inputs.description.isValid}
-        />
-        <Button disabled={!formData.isValid}>Update Place</Button>
-      </form>
-    )
+    <>
+      <ErrorModal error={error} onCancel={clearError} />
+      {!isLoading && formData.inputs.title.value && (
+        <form className="place-form" onSubmit={updateSubmitHandler}>
+          <Input
+            type="text"
+            label="Title"
+            id="title"
+            element="input"
+            errorMessage="Please enter a valid title"
+            validators={[VALIDATOR_REQUIRE()]}
+            onInput={inputHandler}
+            initialValue={formData.inputs.title.value}
+            initialIsValid={formData.inputs.title.isValid}
+          />
+          <Input
+            type="text"
+            label="Description"
+            id="description"
+            element="textarea"
+            errorMessage="Please enter a valid description (min 5 characters)"
+            validators={[VALIDATOR_MINLENGTH(5)]}
+            onInput={inputHandler}
+            initialValue={formData.inputs.description.value}
+            initialIsValid={formData.inputs.description.isValid}
+          />
+          <Button disabled={!formData.isValid}>Update Place</Button>
+        </form>
+      )}
+    </>
   );
 };
 

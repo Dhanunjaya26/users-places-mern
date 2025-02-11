@@ -39,7 +39,7 @@ const Auth = () => {
 
     if (isLoginMode) {
       try {
-        await sendRequest(
+        const responseData = await sendRequest(
           "http://localhost:5000/api/users/login",
           "POST",
           {
@@ -50,7 +50,7 @@ const Auth = () => {
             password: formData.inputs.password.value,
           })
         );
-        login();
+        login(responseData.user.id);
       } catch (err) {}
     } else {
       try {
@@ -66,7 +66,7 @@ const Auth = () => {
             password: formData.inputs.password.value,
           })
         );
-        login();
+        login(responseData.newUser.id);
       } catch (err) {}
     }
   };
@@ -119,8 +119,8 @@ const Auth = () => {
             type="password"
             label="Password"
             id="password"
-            errorMessage="Please enter a valid password (min 5 characters)"
-            validators={[VALIDATOR_MINLENGTH(5)]}
+            errorMessage="Please enter a valid password (min 6 characters)"
+            validators={[VALIDATOR_MINLENGTH(6)]}
             onInput={inputHandler}
           />
           <Button type="submit" disabled={!formData.isValid}>
