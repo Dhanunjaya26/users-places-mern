@@ -14,6 +14,7 @@ import "./Auth.css";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import { useHttpClient } from "../../shared/hooks/http-hook";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 
 const Auth = () => {
   const { isLoggedIn, login } = useContext(AuthContext);
@@ -54,17 +55,16 @@ const Auth = () => {
       } catch (err) {}
     } else {
       try {
+        const formBody = new FormData();
+        formBody.append("email", formData.inputs.email.value);
+        formBody.append("password", formData.inputs.password.value);
+        formBody.append("name", formData.inputs.username.value);
+        formBody.append("image", formData.inputs.image.value);
         const responseData = await sendRequest(
           "http://localhost:5000/api/users/signup",
           "POST",
-          {
-            "Content-Type": "application/json",
-          },
-          JSON.stringify({
-            name: formData.inputs.username.value,
-            email: formData.inputs.email.value,
-            password: formData.inputs.password.value,
-          })
+          {}, //you don't have to set headers because when you send formData as body, fetch api automatically adds the right headers.
+          formBody
         );
         login(responseData.newUser.id);
       } catch (err) {}
@@ -74,13 +74,18 @@ const Auth = () => {
   const switchModeHandler = () => {
     if (!isLoginMode) {
       delete formData.inputs.username;
+      delete formData.inputs.image;
       setFormData(
         { ...formData.inputs },
         formData.inputs.email.isValid && formData.inputs.password.isValid
       );
     } else {
       setFormData(
-        { ...formData.inputs, username: { value: "", isValid: false } },
+        {
+          ...formData.inputs,
+          username: { value: "", isValid: false },
+          image: { value: "", isValid: false },
+        },
         false
       );
     }
@@ -95,15 +100,23 @@ const Auth = () => {
         <h2>Authenticate</h2>
         <form action="" onSubmit={authHandler}>
           {!isLoginMode && (
-            <Input
-              element="input"
-              type="text"
-              label="Username"
-              id="username"
-              errorMessage="Please enter a valid Username"
-              validators={[VALIDATOR_REQUIRE()]}
-              onInput={inputHandler}
-            />
+            <>
+              <Input
+                element="input"
+                type="text"
+                label="Username"
+                id="username"
+                errorMessage="Please enter a valid Username"
+                validators={[VALIDATOR_REQUIRE()]}
+                onInput={inputHandler}
+              />
+              <ImageUpload
+                id="image"
+                center
+                onInput={inputHandler}
+                errorText="select image"
+              />
+            </>
           )}
           <Input
             element="input"
