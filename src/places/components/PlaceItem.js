@@ -15,7 +15,7 @@ import { useHttpClient } from "../../shared/hooks/http-hook";
 const PlaceItem = (props) => {
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const { isLoggedIn, userId } = useContext(AuthContext);
+  const { isLoggedIn, userId, token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const openMapHandler = () => setShowMap(true);
@@ -31,7 +31,8 @@ const PlaceItem = (props) => {
     try {
       await sendRequest(
         `http://localhost:5000/api/places/${props.id}`,
-        "DELETE"
+        "DELETE",
+        { Authorization: "Bearer " + token }
       );
       props.onDelete(props.id);
     } catch (err) {}

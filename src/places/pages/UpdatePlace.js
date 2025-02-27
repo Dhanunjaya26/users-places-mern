@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import "./PlaceForm.css";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,10 +12,12 @@ import { Card } from "../../shared/components/UIElements";
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import { AuthContext } from "../../shared/context/auth-context";
 
 const UpdatePlace = () => {
   const { placeId } = useParams();
   const [placeDetails, setPlaceDetails] = useState();
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [formData, inputHandler, setFormData] = useForm(
@@ -65,7 +67,10 @@ const UpdatePlace = () => {
       await sendRequest(
         `http://localhost:5000/api/places/${placeId}`,
         "PATCH",
-        { "Content-Type": "application/json" },
+        {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
         JSON.stringify({
           title: formData.inputs.title.value,
           description: formData.inputs.description.value,

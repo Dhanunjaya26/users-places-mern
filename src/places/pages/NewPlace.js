@@ -17,7 +17,7 @@ import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 const NewPlace = () => {
   const navigate = useNavigate();
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
-  const { userId } = useContext(AuthContext);
+  const { userId, token } = useContext(AuthContext);
   const [formData, inputHandler] = useForm(
     {
       title: {
@@ -54,7 +54,7 @@ const NewPlace = () => {
       const responseData = await sendRequest(
         "http://localhost:5000/api/places",
         "POST",
-        {},
+        { Authorization: "Bearer " + token },
         formBody
       );
       navigate("/");

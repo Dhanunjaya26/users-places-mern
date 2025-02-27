@@ -51,7 +51,7 @@ const Auth = () => {
             password: formData.inputs.password.value,
           })
         );
-        login(responseData.user.id);
+        login(responseData.userId, responseData.token);
       } catch (err) {}
     } else {
       try {
@@ -66,7 +66,7 @@ const Auth = () => {
           {}, //you don't have to set headers because when you send formData as body, fetch api automatically adds the right headers.
           formBody
         );
-        login(responseData.newUser.id);
+        login(responseData.userId, responseData.token);
       } catch (err) {}
     }
   };
