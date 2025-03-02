@@ -50,7 +50,6 @@ const NewPlace = () => {
       formBody.append("description", formData.inputs.description.value);
       formBody.append("address", formData.inputs.address.value);
       formBody.append("image", formData.inputs.image.value);
-      formBody.append("creator", userId);
       const responseData = await sendRequest(
         "http://localhost:5000/api/places",
         "POST",
