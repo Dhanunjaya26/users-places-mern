@@ -41,7 +41,7 @@ const Auth = () => {
     if (isLoginMode) {
       try {
         const responseData = await sendRequest(
-          "http://localhost:5000/api/users/login",
+          process.env.REACT_APP_BACKEND_URL + "/users/login",
           "POST",
           {
             "Content-Type": "application/json",
@@ -61,7 +61,7 @@ const Auth = () => {
         formBody.append("name", formData.inputs.username.value);
         formBody.append("image", formData.inputs.image.value);
         const responseData = await sendRequest(
-          "http://localhost:5000/api/users/signup",
+          process.env.REACT_APP_BACKEND_URL + "/users/signup",
           "POST",
           {}, //you don't have to set headers because when you send formData as body, fetch api automatically adds the right headers.
           formBody
